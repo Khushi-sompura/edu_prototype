@@ -100,8 +100,7 @@ export default function SchoolSettingsPage() {
         <section className="surface p-5">
           <h2 className="font-semibold">{SCHOOL.escrow}</h2>
           <p className="mt-1 text-sm text-[var(--ink-muted)]">
-            Split-trust recovery: teacher holds one share, school admin holds
-            the other. EduBridge cannot decrypt roster names.
+            {SCHOOL.escrowDesc}
           </p>
           <div className="mt-4 rounded-[var(--radius-sm)] bg-[var(--bg)] p-4 text-sm">
             <p>
