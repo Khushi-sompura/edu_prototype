@@ -1,7 +1,7 @@
 export type Role = "teacher" | "school" | "platform";
 
-export const ROLE_STORAGE_KEY = "edubridge.role.v1";
-export const SESSION_STORAGE_KEY = "edubridge.session.v1";
+export const ROLE_STORAGE_KEY = "edtech.role.v1";
+export const SESSION_STORAGE_KEY = "edtech.session.v1";
 
 export type Session = {
   role: Role;
@@ -42,7 +42,7 @@ export const DEMO_ACCOUNTS: Record<
   { email: string; password: string; name: string; org: string }
 > = {
   teacher: {
-    email: "teacher@edubridge.demo",
+    email: "teacher@edtech.demo",
     password: "demo",
     name: "A. Chen",
     org: "Riverside Middle",
@@ -54,9 +54,9 @@ export const DEMO_ACCOUNTS: Record<
     org: "Riverside Middle",
   },
   platform: {
-    email: "owner@edubridge.demo",
+    email: "owner@edtech.demo",
     password: "demo",
-    name: "EduBridge Ops",
-    org: "EduBridge Platform",
+    name: "EdTech Ops",
+    org: "EdTech AI Platform",
   },
 };

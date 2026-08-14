@@ -6,7 +6,7 @@ import { PRIVACY } from "@/lib/messages";
 
 type Student = { code: string; name: string };
 
-const STORAGE_KEY = "edubridge.roster.v1";
+const STORAGE_KEY = "edtech.roster.v1";
 
 function makeCode() {
   return `STU-${Math.floor(1000 + Math.random() * 9000)}`;

@@ -1,5 +1,5 @@
 export const APP = {
-  name: "EduBridge",
+  name: "EdTech AI Platform",
   tagline: "Smarter teaching. Better outcomes.",
   subtitle: "Curriculum, pedagogy, and proof — in one teacher workflow.",
 } as const;
@@ -52,6 +52,8 @@ export const SCHOOL = {
   branding: "School branding",
   policy: "KB promotion policy",
   escrow: "Roster key-share escrow",
+  escrowDesc:
+    "Split-trust recovery: teacher holds one share, school admin holds the other. EdTech AI Platform cannot decrypt roster names.",
 } as const;
 
 export const PLATFORM = {
