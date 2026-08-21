@@ -40,7 +40,7 @@ export default function PlannerPage() {
   const [mode, setMode] = useState<"progression" | "single">("progression");
   const [startLevel, setStartLevel] = useState<BloomLevel>("understand");
   const [endLevel, setEndLevel] = useState<BloomLevel>("analyze");
-  const [pedagogy, setPedagogy] = useState("socratic");
+  const [pedagogy, setPedagogy] = useState("blooms");
   const [supports, setSupports] = useState({
     communication: "short_phrase",
     attention: true,

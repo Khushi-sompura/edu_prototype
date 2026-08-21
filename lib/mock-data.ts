@@ -45,24 +45,39 @@ export const BLOOM_LEVELS: {
 
 export const PEDAGOGY_MODES = [
   {
-    id: "socratic",
-    label: "Socratic discussion",
-    detail: "Bloom goals expressed through probing questions and dialogue.",
+    id: "blooms",
+    label: "Bloom's Taxonomy",
+    detail: "Progress learning through cognitive levels from remember to create.",
   },
   {
-    id: "guided_inquiry",
-    label: "Guided inquiry",
-    detail: "Students investigate with structured teacher prompts.",
+    id: "differentiated",
+    label: "Differentiated Instruction",
+    detail: "Adapt content, process, product, or environment to student need.",
   },
   {
-    id: "direct_socratic",
-    label: "Direct instruction + Socratic follow-up",
-    detail: "Model first, then deepen with discussion.",
+    id: "inquiry",
+    label: "Inquiry-Based Learning",
+    detail: "Students investigate driven by questions and evidence.",
   },
   {
-    id: "remediation",
-    label: "Intervention / remediation",
-    detail: "Compressed progression with heavier scaffolds.",
+    id: "experiential",
+    label: "Experiential & Fieldwork",
+    detail: "Learn through real-world experience, observation, and practice.",
+  },
+  {
+    id: "explicit",
+    label: "Explicit Instruction",
+    detail: "I do → We do → You do with clear modeling and practice.",
+  },
+  {
+    id: "cooperative",
+    label: "Cooperative Learning",
+    detail: "Structured group roles and shared responsibility for learning.",
+  },
+  {
+    id: "gamification",
+    label: "Gamification",
+    detail: "Points, levels, challenges, and rewards to drive engagement.",
   },
 ] as const;
 
