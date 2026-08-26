@@ -81,48 +81,77 @@ export const PEDAGOGY_MODES = [
   },
 ] as const;
 
-export const KB_DOCS = [
+export type KbDoc = {
+  id: string;
+  layer: "platform" | "school" | "teacher";
+  title: string;
+  tags: string[];
+  folder: string;
+  fileName: string;
+  status: "draft" | "published";
+  uploadedAt: string;
+};
+
+export const KB_DOCS: KbDoc[] = [
   {
     id: "p1",
-    layer: "platform" as const,
+    layer: "platform",
     title: "Bloom progression for middle school science",
     tags: ["science", "bloom", "socratic"],
     folder: "Pedagogy frameworks",
+    fileName: "bloom-science-ms.pdf",
+    status: "published",
+    uploadedAt: "2026-03-12",
   },
   {
     id: "p2",
-    layer: "platform" as const,
+    layer: "platform",
     title: "Behavior intervention glossary",
     tags: ["behavior", "intervention"],
     folder: "Behavior intervention plans",
+    fileName: "behavior-glossary.docx",
+    status: "published",
+    uploadedAt: "2026-02-28",
   },
   {
     id: "s1",
-    layer: "school" as const,
+    layer: "school",
     title: "Year 7 Science scope & sequence",
     tags: ["science", "6-8"],
     folder: "Teaching scope",
+    fileName: "y7-science-scope.xlsx",
+    status: "published",
+    uploadedAt: "2026-04-01",
   },
   {
     id: "s2",
-    layer: "school" as const,
+    layer: "school",
     title: "Classroom behavior policy",
     tags: ["behavior", "policy"],
     folder: "School policy",
+    fileName: "classroom-behavior-policy.pdf",
+    status: "published",
+    uploadedAt: "2026-01-15",
   },
   {
     id: "t1",
-    layer: "teacher" as const,
+    layer: "teacher",
     title: "Food chains — my draft lesson",
     tags: ["science", "food chains", "understand"],
     folder: "My lesson plans",
+    fileName: "food-chains-draft.docx",
+    status: "draft",
+    uploadedAt: "2026-05-08",
   },
   {
     id: "t2",
-    layer: "teacher" as const,
+    layer: "teacher",
     title: "Sentence frames for language support",
     tags: ["supports", "language"],
     folder: "My class resources",
+    fileName: "sentence-frames.pdf",
+    status: "published",
+    uploadedAt: "2026-05-02",
   },
 ];
 
@@ -224,18 +253,18 @@ export const ENGAGEMENT_STRATEGIES = [
 
 export const PRIVACY_TABLE = [
   {
-    data: "Student name ↔ code map",
+    data: "Student ID roster",
     where: "This device only",
-    note: "Never sent to server",
+    note: "IDs only — no names stored",
   },
   {
     data: "Grades & CSV uploads",
-    where: "Server (by code)",
+    where: "Server (by student ID)",
     note: "No names attached",
   },
   {
     data: "Behavior ratings",
-    where: "Server (by code)",
+    where: "Server (by student ID)",
     note: "Pre/post tallies",
   },
   {

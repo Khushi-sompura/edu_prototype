@@ -35,7 +35,8 @@ export const DASHBOARD = {
   title: "Teacher workspace",
   subtitle: "Jump into analytics or the AI teaching assistant.",
   app1Title: "Privacy Analytics",
-  app1Desc: "CSV grades, weak-area flags, and trend views — student names stay on your device.",
+  app1Desc:
+    "CSV grades, weak-area flags, and trend views — student IDs only, no names.",
   app2Title: "AI Teaching Assistant",
   app2Desc: "Bloom lesson planning, 3-layer KB chat, and pedagogy-aligned outputs.",
   schoolTitle: "School admin workspace",
@@ -44,6 +45,9 @@ export const DASHBOARD = {
   platformTitle: "Platform admin workspace",
   platformSubtitle:
     "Platform KB ownership, school oversight, and cross-school promotion approvals.",
+  privacyTileDesc: "Student ID roster and where each data type lives.",
+  schoolAnalyticsDesc:
+    "See weak-area patterns and method tallies by student ID only.",
 } as const;
 
 export const SCHOOL = {
@@ -53,7 +57,7 @@ export const SCHOOL = {
   policy: "KB promotion policy",
   escrow: "Roster key-share escrow",
   escrowDesc:
-    "Split-trust recovery: teacher holds one share, school admin holds the other. EdTech AI Platform cannot decrypt roster names.",
+    "Split-trust recovery: teacher holds one share, school admin holds the other. EdTech AI Platform cannot decrypt the student ID roster.",
 } as const;
 
 export const PLATFORM = {
@@ -101,9 +105,33 @@ export const KB = {
     teacher: "Teacher Knowledge Base",
   },
   uploaded: "Uploaded",
+  uploadedDocs: "Uploaded documents",
+  uploadedDocsEmpty: "No documents uploaded for this layer yet.",
   promote: "Request promotion",
   promoteShort: "Promote",
   upload: "Upload Knowledge",
+  docCols: {
+    title: "Title",
+    type: "Type",
+    file: "File",
+    status: "Status",
+    uploadedAt: "Uploaded",
+    actions: "Actions",
+  },
+  docActions: {
+    view: "View",
+    download: "Download",
+    delete: "Delete",
+    promote: "Promote",
+    close: "Close",
+  },
+  viewModal: {
+    type: "Type",
+    file: "File",
+    status: "Status",
+    uploaded: "Uploaded",
+    tags: "Tags",
+  },
   fields: {
     knowledgeBase: "Knowledge Base",
     contentType: "Content Type",
@@ -121,6 +149,7 @@ export const KB = {
     optional: "Optional",
     submit: "Upload",
     uploadedDemo: "Tagged & ready (demo)",
+    studentIdPlaceholder: "Student ID (e.g. STU-8841)",
   },
   typeFields: {
     behaviorCategory: "Behavior Category",
@@ -155,7 +184,7 @@ export const KB = {
     requiredOutcomes: "Required Learning Outcomes",
     expectedResponse: "Expected Teacher Response",
     resourceType: "Resource Type",
-    student: "Student",
+    student: "Student ID",
     observation: "Observation",
     recommendedAction: "Recommended Action",
   },
@@ -163,10 +192,31 @@ export const KB = {
 
 export const PRIVACY = {
   title: "Roster & Privacy",
-  subtitle: "Names map to codes on this device only. Server data uses codes.",
+  subtitle:
+    "Student IDs only — no names are stored. All analytics and tallies use IDs.",
   warning:
-    "Clearing browser data removes the local name map. Grades under codes remain on the server.",
+    "Clearing browser data removes the local student ID roster. Grades under IDs remain on the server.",
   addStudent: "Add student",
+  rosterTitle: "Student ID roster (device-only)",
+  storageTitle: "What is stored where",
+  studentId: "Student ID",
+  actions: "Actions",
+  remove: "Remove",
+  emptyRoster: "No student IDs yet.",
+  studentIdPlaceholder: "Student ID (or leave blank to auto-generate)",
+  autoCodeHint: "Leave blank to auto-generate a secure STU-#### ID.",
+  backupTitle: "Roster backup (split-trust demo)",
+  backupDesc:
+    "Prototype shows teacher password + school-admin share messaging. Password cannot be reset by the platform.",
+  setupBackup: "Set up backup",
+  backupPassword: "Backup password (separate from login)",
+  createBackup: "Create encrypted backup",
+  backupSuccess:
+    "Last backup: just now · {count} student IDs · admin key share pending school escrow.",
+  restoreTitle: "Restore on new device",
+  decryptLocally: "Decrypt locally",
+  restoreHint:
+    "Grades stay under student IDs either way — restore only the ID roster on a new device.",
 } as const;
 
 export const ANALYTICS = {
