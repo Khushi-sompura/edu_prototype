@@ -115,6 +115,8 @@ const actionBtnClass =
 const actionDangerBtnClass =
   "inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] text-[var(--danger)] transition-colors hover:bg-[var(--danger-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--danger)]";
 
+const KB_DOCS_STORAGE_KEY = "edtech.kb.docs.v1";
+
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
