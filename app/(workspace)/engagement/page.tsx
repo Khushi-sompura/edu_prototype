@@ -5,7 +5,10 @@ import { CsvUploadPanel } from "@/components/CsvUploadPanel";
 import { ENGAGEMENT_STRATEGIES } from "@/lib/mock-data";
 import { ENGAGEMENT } from "@/lib/messages";
 
+const todayIso = () => new Date().toISOString().slice(0, 10);
+
 export default function EngagementPage() {
+  const [date, setDate] = useState(todayIso);
   const [strategy, setStrategy] = useState(ENGAGEMENT_STRATEGIES[0].id);
   const [energy, setEnergy] = useState(7);
   const [logs, setLogs] = useState(
@@ -44,6 +47,15 @@ export default function EngagementPage() {
         <section className="surface p-5">
           <h2 className="font-semibold">Today&apos;s check-in</h2>
           <div className="mt-4 grid gap-3">
+            <div className="field">
+              <label htmlFor="engagement-date">{ENGAGEMENT.dateLabel}</label>
+              <input
+                id="engagement-date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            </div>
             <div className="field">
               <label>Strategy used</label>
               <select
@@ -146,7 +158,7 @@ export default function EngagementPage() {
                 })),
               );
               setImportNote(
-                `Mapped ${mapping.strategy}/${mapping.energy} from ${fileName} (${rowCount} rows). Trends updated.`,
+                `Mapped ${mapping.date}/${mapping.strategy}/${mapping.energy} from ${fileName} (${rowCount} rows). Trends updated.`,
               );
             }}
           />

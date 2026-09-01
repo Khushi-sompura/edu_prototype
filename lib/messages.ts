@@ -230,6 +230,7 @@ export const ANALYTICS = {
 export const BEHAVIOR = {
   title: "Behavior Tally",
   subtitle: "Pre/post intervention ratings with a plain-language report.",
+  dateLabel: "Date",
   csvTitle: "Upload behavior CSV",
   csvHint:
     "Bulk-import daily ratings by student code. Map columns from any source format.",
@@ -240,6 +241,7 @@ export const BEHAVIOR = {
 export const ENGAGEMENT = {
   title: "Engagement Tally",
   subtitle: "Rate class energy by strategy — see what actually works.",
+  dateLabel: "Date",
   csvTitle: "Upload engagement CSV",
   csvHint:
     "Import class energy check-ins by teaching strategy. Flexible column mapping included.",
