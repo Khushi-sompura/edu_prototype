@@ -6,8 +6,11 @@ import { BEHAVIOR } from "@/lib/messages";
 
 type Phase = "pre" | "post";
 
+const todayIso = () => new Date().toISOString().slice(0, 10);
+
 export default function BehaviorPage() {
   const [phase, setPhase] = useState<Phase>("pre");
+  const [date, setDate] = useState(todayIso);
   const [student, setStudent] = useState("STU-8841");
   const [behavior, setBehavior] = useState("Off-task talking");
   const [rating, setRating] = useState(3);
@@ -56,6 +59,15 @@ export default function BehaviorPage() {
           </div>
 
           <div className="grid gap-3">
+            <div className="field">
+              <label htmlFor="behavior-date">{BEHAVIOR.dateLabel}</label>
+              <input
+                id="behavior-date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            </div>
             <div className="field">
               <label>Student code</label>
               <select
@@ -160,7 +172,7 @@ export default function BehaviorPage() {
               setPost(postSeed);
               setStudent("STU-8841");
               setImportNote(
-                `Mapped ${mapping.code}/${mapping.behavior}/${mapping.phase}/${mapping.rating} from ${fileName}. Charts refreshed with imported tallies.`,
+                `Mapped ${mapping.code}/${mapping.behavior}/${mapping.phase}/${mapping.rating}/${mapping.date} from ${fileName}. Charts refreshed with imported tallies.`,
               );
             }}
           />

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { KB_DOCS } from "@/lib/mock-data";
+import { KB_DOCS, type KbDoc } from "@/lib/mock-data";
 import { KB } from "@/lib/messages";
 import {
   BEHAVIOR_CATEGORIES,
@@ -24,6 +24,142 @@ import {
   type KbLayer,
   type PedagogyId,
 } from "@/lib/kb-upload";
+
+function IconView({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function IconDownload({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3v12" />
+      <path d="m7 10 5 5 5-5" />
+      <path d="M5 21h14" />
+    </svg>
+  );
+}
+
+function IconPromote({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 19V5" />
+      <path d="m5 12 7-7 7 7" />
+    </svg>
+  );
+}
+
+function IconDelete({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6V4h8v2" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </svg>
+  );
+}
+
+const actionBtnClass =
+  "inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] text-[var(--brand)] transition-colors hover:bg-[var(--brand-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)]";
+
+const actionDangerBtnClass =
+  "inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] text-[var(--danger)] transition-colors hover:bg-[var(--danger-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--danger)]";
+
+const KB_DOCS_STORAGE_KEY = "edtech.kb.docs.v1";
+
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function loadStoredDocs(): KbDoc[] | null {
+  try {
+    const raw = localStorage.getItem(KB_DOCS_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return null;
+    const docs = parsed
+      .map((item): KbDoc | null => {
+        if (!item || typeof item !== "object") return null;
+        const d = item as Partial<KbDoc>;
+        if (typeof d.id !== "string" || typeof d.title !== "string") return null;
+        if (d.layer !== "platform" && d.layer !== "school" && d.layer !== "teacher") {
+          return null;
+        }
+        return {
+          id: d.id,
+          layer: d.layer,
+          title: d.title,
+          tags: Array.isArray(d.tags)
+            ? d.tags.filter((t): t is string => typeof t === "string")
+            : [],
+          folder: typeof d.folder === "string" ? d.folder : "Uploaded",
+          fileName:
+            typeof d.fileName === "string" && d.fileName
+              ? d.fileName
+              : "document.txt",
+          status: d.status === "draft" ? "draft" : "published",
+          uploadedAt:
+            typeof d.uploadedAt === "string" && d.uploadedAt
+              ? d.uploadedAt
+              : todayIso(),
+        };
+      })
+      .filter((d): d is KbDoc => d !== null);
+    return docs.length ? docs : null;
+  } catch {
+    return null;
+  }
+}
 
 type Promo = {
   id: string;
@@ -169,6 +305,24 @@ export default function KnowledgeBasePage() {
     ),
   );
   const [uploadNote, setUploadNote] = useState<string | null>(null);
+  const [allDocs, setAllDocs] = useState<KbDoc[]>(KB_DOCS);
+  const [viewDocId, setViewDocId] = useState<string | null>(null);
+  const [docsHydrated, setDocsHydrated] = useState(false);
+
+  useEffect(() => {
+    const stored = loadStoredDocs();
+    if (stored?.length) setAllDocs(stored);
+    setDocsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!docsHydrated) return;
+    try {
+      localStorage.setItem(KB_DOCS_STORAGE_KEY, JSON.stringify(allDocs));
+    } catch {
+      /* ignore */
+    }
+  }, [allDocs, docsHydrated]);
 
   useEffect(() => {
     const next: KbLayer =
@@ -180,11 +334,25 @@ export default function KnowledgeBasePage() {
     setLayer(next);
     setUpload(initialUpload(next));
     setUploadNote(null);
+    setViewDocId(null);
   }, [role]);
 
+  useEffect(() => {
+    if (!viewDocId) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setViewDocId(null);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [viewDocId]);
+
   const docs = useMemo(
-    () => KB_DOCS.filter((d) => d.layer === layer),
-    [layer],
+    () => allDocs.filter((d) => d.layer === layer),
+    [allDocs, layer],
+  );
+  const viewDoc = useMemo(
+    () => allDocs.find((d) => d.id === viewDocId) ?? null,
+    [allDocs, viewDocId],
   );
 
   const layerOptions = (
@@ -247,17 +415,61 @@ export default function KnowledgeBasePage() {
       upload.contentType === "pedagogy_frameworks"
         ? PEDAGOGY_FRAMEWORKS.find((p) => p.id === upload.pedagogy)?.label
         : null;
+    const title = upload.title.trim();
+    const fileName = upload.fileName || "untitled.txt";
+    const nextDoc: KbDoc = {
+      id: `u${Date.now()}`,
+      layer,
+      title,
+      tags: upload.tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
+      folder: typeLabel,
+      fileName,
+      status: upload.status,
+      uploadedAt: todayIso(),
+    };
+    setAllDocs((prev) => [nextDoc, ...prev]);
     setUploadNote(
-      [
-        upload.title.trim(),
-        typeLabel,
-        pedagogyLabel,
-        upload.fileName || "no file",
-        upload.status,
-      ]
+      [title, typeLabel, pedagogyLabel, fileName, upload.status]
         .filter(Boolean)
         .join(" · "),
     );
+    setUpload((prev) => ({
+      ...prev,
+      title: "",
+      tags: "",
+      fileName: "",
+      student: "",
+    }));
+  }
+
+  function deleteDoc(id: string) {
+    setAllDocs((prev) => prev.filter((d) => d.id !== id));
+    if (viewDocId === id) setViewDocId(null);
+    if (promoOpen === id) setPromoOpen(null);
+  }
+
+  function downloadDoc(doc: KbDoc) {
+    const content = [
+      `${doc.title}`,
+      `Layer: ${doc.layer}`,
+      `Type: ${doc.folder}`,
+      `File: ${doc.fileName}`,
+      `Status: ${doc.status}`,
+      `Uploaded: ${doc.uploadedAt}`,
+      doc.tags.length ? `Tags: ${doc.tags.join(", ")}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = doc.fileName || `${doc.title}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   function renderTypeFields() {
@@ -615,7 +827,7 @@ export default function KnowledgeBasePage() {
             <input
               value={upload.student}
               onChange={(e) => patchUpload({ student: e.target.value })}
-              placeholder="Student code or alias"
+              placeholder={KB.fields.studentIdPlaceholder}
             />
           </div>
           <div className="field">
@@ -900,181 +1112,341 @@ export default function KnowledgeBasePage() {
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
-        {showUpload && (
-          <section className="surface p-6">
-            <h2 className="font-display text-xl font-semibold">{KB.upload}</h2>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <div className="field">
-                <label>{KB.fields.contentType}</label>
-                <select
-                  value={upload.contentType}
-                  onChange={(e) =>
-                    patchUpload({
-                      contentType: e.target.value as ContentTypeId,
-                    })
-                  }
-                >
-                  {contentTypes.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {upload.contentType === "pedagogy_frameworks" ? (
+        <div className="min-w-0 space-y-5">
+          {showUpload && (
+            <section className="surface p-6">
+              <h2 className="font-display text-xl font-semibold">{KB.upload}</h2>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <div className="field">
-                  <label>{KB.fields.pedagogy}</label>
+                  <label>{KB.fields.contentType}</label>
                   <select
-                    value={upload.pedagogy}
+                    value={upload.contentType}
                     onChange={(e) =>
                       patchUpload({
-                        pedagogy: e.target.value as PedagogyId,
+                        contentType: e.target.value as ContentTypeId,
                       })
                     }
                   >
-                    {PEDAGOGY_FRAMEWORKS.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.label}
+                    {contentTypes.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.label}
                       </option>
                     ))}
                   </select>
                 </div>
-              ) : (
+
+                {upload.contentType === "pedagogy_frameworks" ? (
+                  <div className="field">
+                    <label>{KB.fields.pedagogy}</label>
+                    <select
+                      value={upload.pedagogy}
+                      onChange={(e) =>
+                        patchUpload({
+                          pedagogy: e.target.value as PedagogyId,
+                        })
+                      }
+                    >
+                      {PEDAGOGY_FRAMEWORKS.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div className="field">
+                    <label>{KB.fields.title}</label>
+                    <input
+                      value={upload.title}
+                      onChange={(e) => patchUpload({ title: e.target.value })}
+                      placeholder="e.g. Introduction to Inquiry-Based Learning"
+                    />
+                  </div>
+                )}
+
+                {upload.contentType === "pedagogy_frameworks" && (
+                  <div className="field sm:col-span-2">
+                    <label>{KB.fields.title}</label>
+                    <input
+                      value={upload.title}
+                      onChange={(e) => patchUpload({ title: e.target.value })}
+                      placeholder="e.g. Introduction to Inquiry-Based Learning"
+                    />
+                  </div>
+                )}
+
+                <div className="contents">{renderTypeFields()}</div>
+
                 <div className="field">
-                  <label>{KB.fields.title}</label>
-                  <input
-                    value={upload.title}
-                    onChange={(e) => patchUpload({ title: e.target.value })}
-                    placeholder="e.g. Introduction to Inquiry-Based Learning"
-                  />
+                  <label>{KB.fields.subject}</label>
+                  <select
+                    value={upload.subject}
+                    onChange={(e) => patchUpload({ subject: e.target.value })}
+                  >
+                    {SUBJECTS.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              )}
 
-              {upload.contentType === "pedagogy_frameworks" && (
+                <div className="field">
+                  <label>{KB.fields.status}</label>
+                  <select
+                    value={upload.status}
+                    onChange={(e) =>
+                      patchUpload({
+                        status: e.target.value as "draft" | "published",
+                      })
+                    }
+                  >
+                    {UPLOAD_STATUSES.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="field sm:col-span-2">
-                  <label>{KB.fields.title}</label>
+                  <label>{KB.fields.gradeLevel}</label>
+                  <div className="flex flex-wrap gap-2">
+                    {GRADE_LEVELS.map((g) => {
+                      const active = upload.grades.includes(g.id);
+                      return (
+                        <button
+                          key={g.id}
+                          type="button"
+                          className={`pill ${
+                            active
+                              ? "bg-[var(--brand-soft)] text-[var(--brand-deep)]"
+                              : "bg-[var(--bg)] text-[var(--ink-muted)]"
+                          }`}
+                          onClick={() =>
+                            patchUpload({
+                              grades: toggleGrade(upload.grades, g.id),
+                            })
+                          }
+                        >
+                          {g.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="field">
+                  <label>
+                    {KB.fields.tags}{" "}
+                    <span className="font-normal text-[var(--ink-faint)]">
+                      ({KB.fields.optional})
+                    </span>
+                  </label>
                   <input
-                    value={upload.title}
-                    onChange={(e) => patchUpload({ title: e.target.value })}
-                    placeholder="e.g. Introduction to Inquiry-Based Learning"
+                    value={upload.tags}
+                    onChange={(e) => patchUpload({ tags: e.target.value })}
+                    placeholder={KB.fields.tagsHint}
                   />
                 </div>
-              )}
 
-              <div className="contents">
-                {renderTypeFields()}
-              </div>
+                <div className="field">
+                  <label>{KB.fields.file}</label>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                    onChange={(e) =>
+                      patchUpload({
+                        fileName: e.target.files?.[0]?.name ?? "",
+                      })
+                    }
+                  />
+                  {upload.fileName ? (
+                    <p className="text-xs text-[var(--ink-muted)]">
+                      {upload.fileName}
+                    </p>
+                  ) : null}
+                </div>
 
-              <div className="field">
-                <label>{KB.fields.subject}</label>
-                <select
-                  value={upload.subject}
-                  onChange={(e) => patchUpload({ subject: e.target.value })}
-                >
-                  {SUBJECTS.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="field">
-                <label>{KB.fields.status}</label>
-                <select
-                  value={upload.status}
-                  onChange={(e) =>
-                    patchUpload({
-                      status: e.target.value as "draft" | "published",
-                    })
-                  }
-                >
-                  {UPLOAD_STATUSES.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="field sm:col-span-2">
-                <label>{KB.fields.gradeLevel}</label>
-                <div className="flex flex-wrap gap-2">
-                  {GRADE_LEVELS.map((g) => {
-                    const active = upload.grades.includes(g.id);
-                    return (
-                      <button
-                        key={g.id}
-                        type="button"
-                        className={`pill ${
-                          active
-                            ? "bg-[var(--brand-soft)] text-[var(--brand-deep)]"
-                            : "bg-[var(--bg)] text-[var(--ink-muted)]"
-                        }`}
-                        onClick={() =>
-                          patchUpload({
-                            grades: toggleGrade(upload.grades, g.id),
-                          })
-                        }
-                      >
-                        {g.label}
-                      </button>
-                    );
-                  })}
+                <div className="sm:col-span-2">
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleUpload}
+                    disabled={!upload.title.trim()}
+                  >
+                    {KB.fields.submit}
+                  </button>
+                  {uploadNote ? (
+                    <p className="mt-2 text-xs text-[var(--ok)]">
+                      {KB.fields.uploadedDemo}: {uploadNote}
+                    </p>
+                  ) : null}
                 </div>
               </div>
+            </section>
+          )}
 
-              <div className="field">
-                <label>
-                  {KB.fields.tags}{" "}
-                  <span className="font-normal text-[var(--ink-faint)]">
-                    ({KB.fields.optional})
-                  </span>
-                </label>
-                <input
-                  value={upload.tags}
-                  onChange={(e) => patchUpload({ tags: e.target.value })}
-                  placeholder={KB.fields.tagsHint}
-                />
-              </div>
-
-              <div className="field">
-                <label>{KB.fields.file}</label>
-                <input
-                  type="file"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
-                  onChange={(e) =>
-                    patchUpload({
-                      fileName: e.target.files?.[0]?.name ?? "",
-                    })
-                  }
-                />
-                {upload.fileName ? (
-                  <p className="text-xs text-[var(--ink-muted)]">
-                    {upload.fileName}
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="sm:col-span-2">
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleUpload}
-                  disabled={!upload.title.trim()}
-                >
-                  {KB.fields.submit}
-                </button>
-                {uploadNote ? (
-                  <p className="mt-2 text-xs text-[var(--ok)]">
-                    {KB.fields.uploadedDemo}: {uploadNote}
-                  </p>
-                ) : null}
+          <section className="surface p-6">
+            <div className="flex flex-wrap items-end justify-between gap-2">
+              <div>
+                <h2 className="font-display text-xl font-semibold">
+                  {KB.uploadedDocs}
+                </h2>
+                <p className="mt-1 text-sm text-[var(--ink-muted)]">
+                  {docs.length} document{docs.length === 1 ? "" : "s"} in this
+                  layer
+                </p>
               </div>
             </div>
+
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--line)] text-[var(--ink-faint)]">
+                    <th className="pb-2 pr-3 font-medium">
+                      {KB.docCols.title}
+                    </th>
+                    <th className="pb-2 pr-3 font-medium">{KB.docCols.type}</th>
+                    <th className="pb-2 pr-3 font-medium">{KB.docCols.file}</th>
+                    <th className="pb-2 pr-3 font-medium">
+                      {KB.docCols.status}
+                    </th>
+                    <th className="pb-2 pr-3 font-medium">
+                      {KB.docCols.uploadedAt}
+                    </th>
+                    <th className="pb-2 text-right font-medium">
+                      {KB.docCols.actions}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {docs.map((doc) => (
+                    <tr key={doc.id} className="border-b border-[var(--line)]">
+                      <td className="py-2.5 pr-3 font-medium">{doc.title}</td>
+                      <td className="py-2.5 pr-3 text-[var(--ink-muted)]">
+                        {doc.folder}
+                      </td>
+                      <td className="py-2.5 pr-3 font-mono text-xs text-[var(--ink-muted)]">
+                        {doc.fileName}
+                      </td>
+                      <td className="py-2.5 pr-3">
+                        <span
+                          className={`pill ${
+                            doc.status === "published"
+                              ? "bg-[var(--ok-soft)] text-[var(--ok)]"
+                              : "bg-[var(--bg)] text-[var(--ink-muted)]"
+                          }`}
+                        >
+                          {doc.status}
+                        </span>
+                      </td>
+                      <td className="py-2.5 pr-3 text-[var(--ink-muted)]">
+                        {doc.uploadedAt}
+                      </td>
+                      <td className="py-2.5">
+                        <div className="flex flex-nowrap items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            className={actionBtnClass}
+                            title={KB.docActions.view}
+                            aria-label={KB.docActions.view}
+                            onClick={() => setViewDocId(doc.id)}
+                          >
+                            <IconView />
+                          </button>
+                          <button
+                            type="button"
+                            className={actionBtnClass}
+                            title={KB.docActions.download}
+                            aria-label={KB.docActions.download}
+                            onClick={() => downloadDoc(doc)}
+                          >
+                            <IconDownload />
+                          </button>
+                          {role === "teacher" && layer === "teacher" && (
+                            <button
+                              type="button"
+                              className={actionBtnClass}
+                              title={KB.docActions.promote}
+                              aria-label={KB.docActions.promote}
+                              onClick={() => setPromoOpen(doc.id)}
+                            >
+                              <IconPromote />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            className={actionDangerBtnClass}
+                            title={KB.docActions.delete}
+                            aria-label={KB.docActions.delete}
+                            onClick={() => deleteDoc(doc.id)}
+                          >
+                            <IconDelete />
+                          </button>
+                        </div>
+                        {promoOpen === doc.id &&
+                          role === "teacher" &&
+                          layer === "teacher" && (
+                            <div className="mt-2 rounded-[var(--radius-sm)] border border-[var(--line)] bg-[var(--bg-elevated)] p-2 text-left">
+                              <div className="field">
+                                <label>Promote to</label>
+                                <select
+                                  value={target}
+                                  onChange={(e) =>
+                                    setTarget(
+                                      e.target.value as "school" | "platform",
+                                    )
+                                  }
+                                >
+                                  <option value="school">School KB</option>
+                                  <option value="platform">Platform KB</option>
+                                </select>
+                              </div>
+                              <div className="field mt-2">
+                                <label>Reason</label>
+                                <textarea
+                                  rows={2}
+                                  value={reason}
+                                  onChange={(e) => setReason(e.target.value)}
+                                />
+                              </div>
+                              <div className="mt-2 flex gap-3">
+                                <button
+                                  type="button"
+                                  className="text-xs font-semibold text-[var(--brand)] hover:underline"
+                                  onClick={() => requestPromo(doc.title)}
+                                >
+                                  Submit
+                                </button>
+                                <button
+                                  type="button"
+                                  className="text-xs font-semibold text-[var(--ink-muted)] hover:underline"
+                                  onClick={() => setPromoOpen(null)}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                      </td>
+                    </tr>
+                  ))}
+                  {docs.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="py-4 text-[var(--ink-faint)]"
+                      >
+                        {KB.uploadedDocsEmpty}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </section>
-        )}
+        </div>
 
         <aside className="min-w-0 space-y-3">
           <div className="surface overflow-hidden p-3">
@@ -1087,70 +1459,24 @@ export default function KnowledgeBasePage() {
                   key={doc.id}
                   className="border-t border-[var(--line)] py-2.5 first:border-t-0 first:pt-0"
                 >
-                  <p className="text-sm font-medium leading-snug break-words">
-                    {doc.title}
-                  </p>
-                  <p className="mt-0.5 text-[11px] leading-snug text-[var(--ink-faint)]">
-                    {doc.folder}
-                  </p>
-                  {role === "teacher" && layer === "teacher" && (
-                    <div className="mt-1.5 min-w-0">
-                      {promoOpen === doc.id ? (
-                        <div className="rounded-[var(--radius-sm)] border border-[var(--line)] bg-[var(--bg-elevated)] p-2">
-                          <div className="field">
-                            <label>Promote to</label>
-                            <select
-                              value={target}
-                              onChange={(e) =>
-                                setTarget(
-                                  e.target.value as "school" | "platform",
-                                )
-                              }
-                            >
-                              <option value="school">School KB</option>
-                              <option value="platform">Platform KB</option>
-                            </select>
-                          </div>
-                          <div className="field mt-2">
-                            <label>Reason</label>
-                            <textarea
-                              rows={2}
-                              value={reason}
-                              onChange={(e) => setReason(e.target.value)}
-                            />
-                          </div>
-                          <div className="mt-2 flex gap-3">
-                            <button
-                              type="button"
-                              className="text-xs font-semibold text-[var(--brand)] hover:underline"
-                              onClick={() => requestPromo(doc.title)}
-                            >
-                              Submit
-                            </button>
-                            <button
-                              type="button"
-                              className="text-xs font-semibold text-[var(--ink-muted)] hover:underline"
-                              onClick={() => setPromoOpen(null)}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          className="text-left text-xs font-semibold text-[var(--brand)] hover:underline"
-                          onClick={() => setPromoOpen(doc.id)}
-                        >
-                          {KB.promoteShort}
-                        </button>
-                      )}
-                    </div>
-                  )}
+                  <button
+                    type="button"
+                    className="w-full text-left"
+                    onClick={() => setViewDocId(doc.id)}
+                  >
+                    <p className="text-sm font-medium leading-snug break-words">
+                      {doc.title}
+                    </p>
+                    <p className="mt-0.5 text-[11px] leading-snug text-[var(--ink-faint)]">
+                      {doc.folder} · {doc.status}
+                    </p>
+                  </button>
                 </li>
               ))}
               {docs.length === 0 && (
-                <li className="text-xs text-[var(--ink-faint)]">None yet</li>
+                <li className="text-xs text-[var(--ink-faint)]">
+                  {KB.uploadedDocsEmpty}
+                </li>
               )}
             </ul>
           </div>
@@ -1238,6 +1564,114 @@ export default function KnowledgeBasePage() {
           )}
         </aside>
       </div>
+
+      {viewDoc ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="kb-doc-view-title"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 bg-[var(--ink)]/40"
+            aria-label={KB.docActions.close}
+            onClick={() => setViewDocId(null)}
+          />
+          <div className="relative z-10 w-full max-w-lg rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] p-5 shadow-lg fade-in">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3
+                  id="kb-doc-view-title"
+                  className="font-display text-xl font-semibold leading-snug"
+                >
+                  {viewDoc.title}
+                </h3>
+                <p className="mt-1 text-sm text-[var(--ink-muted)]">
+                  {viewDoc.folder}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="shrink-0 text-sm font-semibold text-[var(--ink-muted)] hover:text-[var(--ink)]"
+                onClick={() => setViewDocId(null)}
+              >
+                {KB.docActions.close}
+              </button>
+            </div>
+
+            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+              <div>
+                <dt className="text-[var(--ink-faint)]">{KB.viewModal.file}</dt>
+                <dd className="mt-0.5 font-mono text-xs">{viewDoc.fileName}</dd>
+              </div>
+              <div>
+                <dt className="text-[var(--ink-faint)]">{KB.viewModal.type}</dt>
+                <dd className="mt-0.5">{viewDoc.folder}</dd>
+              </div>
+              <div>
+                <dt className="text-[var(--ink-faint)]">
+                  {KB.viewModal.status}
+                </dt>
+                <dd className="mt-0.5">
+                  <span
+                    className={`pill ${
+                      viewDoc.status === "published"
+                        ? "bg-[var(--ok-soft)] text-[var(--ok)]"
+                        : "bg-[var(--bg)] text-[var(--ink-muted)]"
+                    }`}
+                  >
+                    {viewDoc.status}
+                  </span>
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[var(--ink-faint)]">
+                  {KB.viewModal.uploaded}
+                </dt>
+                <dd className="mt-0.5">{viewDoc.uploadedAt}</dd>
+              </div>
+            </dl>
+
+            {viewDoc.tags.length > 0 && (
+              <div className="mt-4">
+                <p className="text-sm text-[var(--ink-faint)]">
+                  {KB.viewModal.tags}
+                </p>
+                <div className="mt-1.5 flex flex-wrap gap-1">
+                  {viewDoc.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="pill bg-[var(--brand-soft)] text-[var(--brand-deep)]"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-5 flex flex-wrap gap-2 border-t border-[var(--line)] pt-4">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => downloadDoc(viewDoc)}
+              >
+                <IconDownload />
+                {KB.docActions.download}
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost text-[var(--danger)]"
+                onClick={() => deleteDoc(viewDoc.id)}
+              >
+                <IconDelete />
+                {KB.docActions.delete}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

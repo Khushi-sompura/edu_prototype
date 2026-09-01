@@ -102,7 +102,7 @@ export function CsvUploadPanel({
           <span className="text-[var(--ink-muted)]">
             {fileName
               ? `${fileName} · ${rowCount} data rows`
-              : "Codes only — no student names in the file"}
+              : "Student IDs only — no names in the file"}
           </span>
           <input
             id={inputId}

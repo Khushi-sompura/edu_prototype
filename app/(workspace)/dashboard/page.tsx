@@ -44,7 +44,7 @@ const TEACHER_TILES = [
   {
     href: "/privacy",
     title: NAV.privacy,
-    desc: "Local name↔code roster and where each data type lives.",
+    desc: DASHBOARD.privacyTileDesc,
     meta: "Privacy",
   },
 ];
@@ -65,7 +65,7 @@ const SCHOOL_TILES = [
   {
     href: "/analytics",
     title: "School analytics overview",
-    desc: "See weak-area patterns and method tallies without student names.",
+    desc: DASHBOARD.schoolAnalyticsDesc,
     meta: "Insights",
   },
 ];
