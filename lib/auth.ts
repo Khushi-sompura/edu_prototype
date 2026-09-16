@@ -18,7 +18,7 @@ export const ROLE_META: Record<
     label: "Teacher",
     short: "Teacher",
     blurb:
-      "Plan lessons, run analytics, log behavior/engagement, and manage a private Teacher KB.",
+      "My Classes (assessments & scores), Method Impact, planner, tallies, and Teacher KB.",
     home: "/dashboard",
   },
   school: {

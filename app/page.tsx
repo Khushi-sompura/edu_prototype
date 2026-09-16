@@ -69,7 +69,7 @@ export default function HomePage() {
                 Classroom workflow
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">
-                Planner, dual chat, tallies, and private Teacher KB.
+                {LANDING.teacherDesc}
               </p>
             </div>
             <div className="border-t border-[var(--line)] p-5 sm:border-l sm:border-t-0">
