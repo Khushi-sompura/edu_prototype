@@ -35,7 +35,7 @@ export default function BehaviorPage() {
   const ready = pre.length >= 5 && post.length >= 5;
 
   return (
-    <div className="mx-auto max-w-5xl fade-in">
+    <div className="w-full fade-in">
       <header className="mb-6">
         <h1 className="font-display text-3xl font-semibold tracking-tight">
           {BEHAVIOR.title}

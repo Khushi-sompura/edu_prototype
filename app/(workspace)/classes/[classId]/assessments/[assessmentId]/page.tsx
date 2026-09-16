@@ -68,7 +68,7 @@ export default function EnterResultsPage() {
 
   if (!classroom || !hydrated) {
     return (
-      <div className="mx-auto max-w-5xl py-12 text-sm text-[var(--ink-muted)]">
+      <div className="w-full py-12 text-sm text-[var(--ink-muted)]">
         Loading…
       </div>
     );
@@ -76,7 +76,7 @@ export default function EnterResultsPage() {
 
   if (!assessment) {
     return (
-      <div className="mx-auto max-w-5xl py-12 text-sm text-[var(--ink-muted)]">
+      <div className="w-full py-12 text-sm text-[var(--ink-muted)]">
         Assessment not found.{" "}
         <Link href={`/classes/${classId}`} className="underline">
           Back
@@ -185,7 +185,7 @@ export default function EnterResultsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl fade-in">
+    <div className="w-full fade-in">
       <header className="mb-6">
         <p className="text-xs text-[var(--ink-faint)]">
           <Link href="/classes" className="hover:underline">
