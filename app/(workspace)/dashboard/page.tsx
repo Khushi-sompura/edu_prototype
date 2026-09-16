@@ -6,10 +6,16 @@ import { DASHBOARD, NAV } from "@/lib/messages";
 
 const TEACHER_TILES = [
   {
+    href: "/classes",
+    title: DASHBOARD.classesTitle,
+    desc: DASHBOARD.classesDesc,
+    meta: "Scores",
+  },
+  {
     href: "/analytics",
     title: DASHBOARD.app1Title,
     desc: DASHBOARD.app1Desc,
-    meta: "App 1",
+    meta: "Insights",
   },
   {
     href: "/planner",

@@ -12,6 +12,7 @@ type NavLink = { href: string; label: string };
 const LINKS_BY_ROLE: Record<Role, NavLink[]> = {
   teacher: [
     { href: "/dashboard", label: NAV.dashboard },
+    { href: "/classes", label: NAV.classes },
     { href: "/analytics", label: NAV.analytics },
     { href: "/planner", label: NAV.planner },
     { href: "/knowledge-base", label: NAV.knowledgeBase },

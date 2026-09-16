@@ -1,70 +1,101 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { PRIVACY_TABLE } from "@/lib/mock-data";
+import { useEffect, useMemo, useState } from "react";
+import {
+  DEMO_CLASSES,
+  DEMO_SCHOOL,
+  DEMO_STUDENTS,
+  PRIVACY_TABLE,
+  type Student,
+} from "@/lib/mock-data";
 import { PRIVACY } from "@/lib/messages";
 
-type Student = { code: string };
-
-const STORAGE_KEY = "edtech.roster.v1";
+const STORAGE_KEY = "edtech.roster.codes.v1";
 
 function makeCode() {
-  return `STU-${Math.floor(1000 + Math.random() * 9000)}`;
+  return `STU-${Math.floor(100 + Math.random() * 900)}`;
 }
 
-function normalizeRoster(raw: unknown): Student[] {
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .map((item) => {
+function normalizeRoster(raw: unknown): Student[] | null {
+  if (!Array.isArray(raw)) return null;
+  const docs = raw
+    .map((item): Student | null => {
       if (!item || typeof item !== "object") return null;
-      const code = (item as { code?: unknown }).code;
-      if (typeof code !== "string" || !code.trim()) return null;
-      return { code: code.trim() };
+      const s = item as Partial<Student>;
+      if (
+        typeof s.id !== "string" ||
+        typeof s.class_id !== "string" ||
+        typeof s.student_code !== "string"
+      ) {
+        return null;
+      }
+      return {
+        id: s.id,
+        class_id: s.class_id,
+        student_code: s.student_code,
+      };
     })
     .filter((s): s is Student => s !== null);
+  return docs.length ? docs : null;
 }
 
 export default function PrivacyPage() {
-  const [roster, setRoster] = useState<Student[]>([
-    { code: "STU-8841" },
-    { code: "STU-2207" },
-    { code: "STU-5510" },
-  ]);
+  const [classId, setClassId] = useState(DEMO_CLASSES[0].id);
+  const [roster, setRoster] = useState<Student[]>(DEMO_STUDENTS);
   const [code, setCode] = useState("");
   const [backupSet, setBackupSet] = useState(false);
   const [backupPw, setBackupPw] = useState("");
   const [restorePw, setRestorePw] = useState("");
   const [purgeDate] = useState("2026-12-15");
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = normalizeRoster(JSON.parse(raw));
-        if (parsed.length) setRoster(parsed);
+        if (parsed) setRoster(parsed);
       }
     } catch {
       /* ignore */
     }
+    setHydrated(true);
   }, []);
 
   useEffect(() => {
+    if (!hydrated) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(roster));
     } catch {
       /* ignore */
     }
-  }, [roster]);
+  }, [roster, hydrated]);
+
+  const classStudents = useMemo(
+    () => roster.filter((s) => s.class_id === classId),
+    [roster, classId],
+  );
 
   function addStudent() {
-    const next = code.trim() || makeCode();
-    if (roster.some((s) => s.code === next)) return;
-    setRoster((r) => [...r, { code: next }]);
+    const nextCode = code.trim() || makeCode();
+    if (
+      roster.some((s) => s.class_id === classId && s.student_code === nextCode)
+    ) {
+      return;
+    }
+    setRoster((r) => [
+      ...r,
+      {
+        id: `st${Date.now()}`,
+        class_id: classId,
+        student_code: nextCode,
+      },
+    ]);
     setCode("");
   }
 
-  function removeStudent(studentCode: string) {
-    setRoster((r) => r.filter((s) => s.code !== studentCode));
+  function removeStudent(id: string) {
+    setRoster((r) => r.filter((s) => s.id !== id));
   }
 
   return (
@@ -74,10 +105,24 @@ export default function PrivacyPage() {
           {PRIVACY.title}
         </h1>
         <p className="mt-1 text-[var(--ink-muted)]">{PRIVACY.subtitle}</p>
+        <p className="mt-2 text-xs text-[var(--ink-faint)]">
+          {DEMO_SCHOOL.name} → Teacher → Class → Student code → Performance
+        </p>
       </header>
 
       <div className="mb-4 rounded-[var(--radius)] border border-[var(--warn)] bg-[var(--warn-soft)] px-4 py-3 text-sm text-[var(--warn)]">
         {PRIVACY.warning}
+      </div>
+
+      <div className="mb-5 field max-w-xs">
+        <label>{PRIVACY.classLabel}</label>
+        <select value={classId} onChange={(e) => setClassId(e.target.value)}>
+          {DEMO_CLASSES.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
@@ -94,28 +139,25 @@ export default function PrivacyPage() {
                 </tr>
               </thead>
               <tbody>
-                {roster.map((s) => (
-                  <tr key={s.code} className="border-b border-[var(--line)]">
+                {classStudents.map((s) => (
+                  <tr key={s.id} className="border-b border-[var(--line)]">
                     <td className="py-2 font-mono text-[var(--ink)]">
-                      {s.code}
+                      {s.student_code}
                     </td>
                     <td className="py-2 text-right">
                       <button
                         type="button"
                         className="text-xs font-semibold text-[var(--ink-muted)] hover:text-[var(--danger)] hover:underline"
-                        onClick={() => removeStudent(s.code)}
+                        onClick={() => removeStudent(s.id)}
                       >
                         {PRIVACY.remove}
                       </button>
                     </td>
                   </tr>
                 ))}
-                {roster.length === 0 && (
+                {classStudents.length === 0 && (
                   <tr>
-                    <td
-                      colSpan={2}
-                      className="py-3 text-[var(--ink-faint)]"
-                    >
+                    <td colSpan={2} className="py-3 text-[var(--ink-faint)]">
                       {PRIVACY.emptyRoster}
                     </td>
                   </tr>
@@ -131,7 +173,11 @@ export default function PrivacyPage() {
               onChange={(e) => setCode(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addStudent()}
             />
-            <button type="button" className="btn btn-primary" onClick={addStudent}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={addStudent}
+            >
               {PRIVACY.addStudent}
             </button>
           </div>
@@ -165,14 +211,6 @@ export default function PrivacyPage() {
           <p className="mt-4 text-sm text-[var(--ink-muted)]">
             Auto-purge date: <strong>{purgeDate}</strong>
           </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button type="button" className="btn btn-secondary">
-              Export before purge
-            </button>
-            <button type="button" className="btn btn-secondary">
-              Purge now
-            </button>
-          </div>
         </section>
 
         <section className="surface p-5 lg:col-span-2">
@@ -200,8 +238,10 @@ export default function PrivacyPage() {
               </button>
               {backupSet && (
                 <p className="mt-3 text-sm text-[var(--ok)]">
-                  {PRIVACY.backupSuccess
-                    .replace("{count}", String(roster.length))}
+                  {PRIVACY.backupSuccess.replace(
+                    "{count}",
+                    String(classStudents.length),
+                  )}
                 </p>
               )}
             </div>

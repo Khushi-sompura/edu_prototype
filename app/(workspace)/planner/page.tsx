@@ -5,6 +5,7 @@ import {
   BLOOM_LEVELS,
   PEDAGOGY_MODES,
   SAMPLE_LESSON,
+  SAMPLE_SLIDE_JSON,
   type BloomLevel,
 } from "@/lib/mock-data";
 import { CHAT, PLANNER } from "@/lib/messages";
@@ -50,6 +51,8 @@ export default function PlannerPage() {
   });
   const [generated, setGenerated] = useState(false);
   const [outputTab, setOutputTab] = useState("overview");
+  const [showSlideJson, setShowSlideJson] = useState(false);
+  const [pptDemoNote, setPptDemoNote] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(true);
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState<ChatMsg[]>([
@@ -570,12 +573,64 @@ export default function PlannerPage() {
                   </button>
                 ))}
               </div>
+
+              <div className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--bg-elevated)] p-4">
+                <h3 className="font-semibold">{PLANNER.exportPptTitle}</h3>
+                <p className="mt-1 text-sm text-[var(--ink-muted)]">
+                  {PLANNER.exportPptHint}
+                </p>
+                <ol className="mt-3 list-decimal space-y-1 pl-5 text-xs text-[var(--ink-muted)]">
+                  <li>Teacher selects lesson / teaching strategy</li>
+                  <li>AI (Claude) returns structured slide JSON</li>
+                  <li>App converts JSON → .pptx via PptxGenJS / python-pptx</li>
+                  <li>Teacher downloads the file</li>
+                </ol>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    disabled={!generated}
+                    onClick={() => setShowSlideJson((v) => !v)}
+                  >
+                    {PLANNER.exportPptPreview}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    disabled={!generated}
+                    onClick={() => {
+                      const blob = new Blob(
+                        [JSON.stringify(SAMPLE_SLIDE_JSON, null, 2)],
+                        { type: "application/json" },
+                      );
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `${setup.topic.replace(/\s+/g, "-").toLowerCase() || "lesson"}-slides.json`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      setPptDemoNote(PLANNER.exportPptDone);
+                    }}
+                  >
+                    {PLANNER.exportPptDownload}
+                  </button>
+                </div>
+                {showSlideJson && (
+                  <pre className="mt-3 max-h-56 overflow-auto rounded-[var(--radius-sm)] border border-[var(--line)] bg-[var(--bg)] p-3 text-[11px] leading-relaxed text-[var(--ink-muted)]">
+                    {JSON.stringify(SAMPLE_SLIDE_JSON, null, 2)}
+                  </pre>
+                )}
+                {pptDemoNote && (
+                  <p className="mt-2 text-sm text-[var(--ok)]">{pptDemoNote}</p>
+                )}
+              </div>
+
               <div className="flex flex-wrap gap-2 border-t border-[var(--line)] pt-4">
-                {["DOCX", "PDF", "Slides", "Google Drive"].map((fmt) => (
+                {["DOCX", "PDF", "Google Drive"].map((fmt) => (
                   <button
                     key={fmt}
                     type="button"
-                    className="btn btn-primary"
+                    className="btn btn-secondary"
                     disabled={!generated}
                   >
                     Export {fmt}

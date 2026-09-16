@@ -6,6 +6,7 @@ export type CsvColumnField = {
   key: string;
   label: string;
   defaultValue: string;
+  optional?: boolean;
 };
 
 type Props = {
@@ -17,6 +18,7 @@ type Props = {
     fileName: string;
     mapping: Record<string, string>;
     rowCount: number;
+    rows: Record<string, string>[];
   }) => void;
 };
 
@@ -41,7 +43,7 @@ export function CsvUploadPanel({
   );
   const [fileName, setFileName] = useState<string | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
-  const [rowCount, setRowCount] = useState(0);
+  const [dataRows, setDataRows] = useState<string[][]>([]);
   const [status, setStatus] = useState<string | null>(null);
 
   async function onFileChange(file: File | null) {
@@ -49,13 +51,12 @@ export function CsvUploadPanel({
     const text = await file.text();
     const rows = parseCsv(text);
     const nextHeaders = rows[0] ?? [];
-    const dataRows = Math.max(0, rows.length - 1);
+    const body = rows.slice(1);
     setFileName(file.name);
     setHeaders(nextHeaders);
-    setRowCount(dataRows);
+    setDataRows(body);
     setStatus(null);
 
-    // Auto-match columns when header names look similar
     setMapping((prev) => {
       const next = { ...prev };
       for (const field of fields) {
@@ -72,17 +73,34 @@ export function CsvUploadPanel({
   }
 
   function applyImport() {
-    if (!fileName || rowCount === 0) {
+    if (!fileName || dataRows.length === 0) {
       setStatus("Choose a CSV file with at least one data row.");
       return;
     }
-    const missing = fields.filter((f) => !mapping[f.key]);
+    const missing = fields.filter(
+      (f) => !f.optional && !mapping[f.key],
+    );
     if (missing.length) {
       setStatus("Map every required column before importing.");
       return;
     }
-    onImport({ fileName, mapping, rowCount });
-    setStatus(`Imported ${rowCount} rows from ${fileName}.`);
+
+    const mappedRows = dataRows.map((cells) => {
+      const obj: Record<string, string> = {};
+      for (const h of headers) {
+        const idx = headers.indexOf(h);
+        obj[h] = cells[idx] ?? "";
+      }
+      return obj;
+    });
+
+    onImport({
+      fileName,
+      mapping,
+      rowCount: dataRows.length,
+      rows: mappedRows,
+    });
+    setStatus(`Imported ${dataRows.length} rows from ${fileName}.`);
   }
 
   return (
@@ -101,8 +119,8 @@ export function CsvUploadPanel({
           </span>
           <span className="text-[var(--ink-muted)]">
             {fileName
-              ? `${fileName} · ${rowCount} data rows`
-              : "Student IDs only — no names in the file"}
+              ? `${fileName} · ${dataRows.length} data rows`
+              : "UTF-8 CSV · map columns · store as Performance records"}
           </span>
           <input
             id={inputId}
@@ -115,7 +133,10 @@ export function CsvUploadPanel({
 
         {fields.map((field) => (
           <div className="field" key={field.key}>
-            <label>{field.label}</label>
+            <label>
+              {field.label}
+              {field.optional ? " (optional)" : ""}
+            </label>
             {headers.length > 0 ? (
               <select
                 value={mapping[field.key]}
@@ -123,7 +144,9 @@ export function CsvUploadPanel({
                   setMapping((m) => ({ ...m, [field.key]: e.target.value }))
                 }
               >
-                <option value="">Select column…</option>
+                <option value="">
+                  {field.optional ? "Not in file…" : "Select column…"}
+                </option>
                 {headers.map((h) => (
                   <option key={h} value={h}>
                     {h}

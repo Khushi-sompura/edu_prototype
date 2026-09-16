@@ -152,6 +152,8 @@ function loadStoredDocs(): KbDoc[] | null {
             typeof d.uploadedAt === "string" && d.uploadedAt
               ? d.uploadedAt
               : todayIso(),
+          language:
+            typeof d.language === "string" && d.language ? d.language : "en",
         };
       })
       .filter((d): d is KbDoc => d !== null);
@@ -174,6 +176,7 @@ type UploadForm = {
   contentType: ContentTypeId;
   pedagogy: PedagogyId;
   title: string;
+  language: string;
   subject: string;
   grades: string[];
   tags: string;
@@ -222,6 +225,7 @@ function initialUpload(layer: KbLayer): UploadForm {
     contentType: defaultContentType(layer),
     pedagogy: "blooms",
     title: "",
+    language: "en",
     subject: "science",
     grades: ["6-8"],
     tags: "",
@@ -429,6 +433,7 @@ export default function KnowledgeBasePage() {
       fileName,
       status: upload.status,
       uploadedAt: todayIso(),
+      language: upload.language || "en",
     };
     setAllDocs((prev) => [nextDoc, ...prev]);
     setUploadNote(
@@ -458,6 +463,7 @@ export default function KnowledgeBasePage() {
       `Type: ${doc.folder}`,
       `File: ${doc.fileName}`,
       `Status: ${doc.status}`,
+      `Language: ${doc.language}`,
       `Uploaded: ${doc.uploadedAt}`,
       doc.tags.length ? `Tags: ${doc.tags.join(", ")}` : "",
     ]
@@ -1116,6 +1122,9 @@ export default function KnowledgeBasePage() {
           {showUpload && (
             <section className="surface p-6">
               <h2 className="font-display text-xl font-semibold">{KB.upload}</h2>
+              <p className="mt-1 text-sm text-[var(--ink-muted)]">
+                {KB.multilingualNote}
+              </p>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <div className="field">
                   <label>{KB.fields.contentType}</label>
@@ -1188,6 +1197,19 @@ export default function KnowledgeBasePage() {
                         {s.label}
                       </option>
                     ))}
+                  </select>
+                </div>
+
+                <div className="field">
+                  <label>{KB.fields.language}</label>
+                  <select
+                    value={upload.language}
+                    onChange={(e) => patchUpload({ language: e.target.value })}
+                  >
+                    <option value="en">English (Build 1 default)</option>
+                    <option value="pt">Português (Build 2 ready)</option>
+                    <option value="es">Español (Build 2 ready)</option>
+                    <option value="other">Other (Unicode)</option>
                   </select>
                 </div>
 
@@ -1313,6 +1335,9 @@ export default function KnowledgeBasePage() {
                       {KB.docCols.status}
                     </th>
                     <th className="pb-2 pr-3 font-medium">
+                      {KB.docCols.language}
+                    </th>
+                    <th className="pb-2 pr-3 font-medium">
                       {KB.docCols.uploadedAt}
                     </th>
                     <th className="pb-2 text-right font-medium">
@@ -1340,6 +1365,9 @@ export default function KnowledgeBasePage() {
                         >
                           {doc.status}
                         </span>
+                      </td>
+                      <td className="py-2.5 pr-3 font-mono text-xs uppercase text-[var(--ink-muted)]">
+                        {doc.language}
                       </td>
                       <td className="py-2.5 pr-3 text-[var(--ink-muted)]">
                         {doc.uploadedAt}
@@ -1435,7 +1463,7 @@ export default function KnowledgeBasePage() {
                   {docs.length === 0 && (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={7}
                         className="py-4 text-[var(--ink-faint)]"
                       >
                         {KB.uploadedDocsEmpty}
@@ -1624,6 +1652,12 @@ export default function KnowledgeBasePage() {
                     {viewDoc.status}
                   </span>
                 </dd>
+              </div>
+              <div>
+                <dt className="text-[var(--ink-faint)]">
+                  {KB.viewModal.language}
+                </dt>
+                <dd className="mt-0.5 font-mono uppercase">{viewDoc.language}</dd>
               </div>
               <div>
                 <dt className="text-[var(--ink-faint)]">

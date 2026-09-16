@@ -6,7 +6,8 @@ export const APP = {
 
 export const NAV = {
   dashboard: "Dashboard",
-  analytics: "Privacy Analytics",
+  classes: "My Classes",
+  analytics: "Method Impact",
   planner: "Lesson Planner",
   knowledgeBase: "Knowledge Base",
   assistant: "AI Assistant",
@@ -22,6 +23,8 @@ export const LANDING = {
   ctaPrimary: "Sign in by role",
   ctaSecondary: "View product map",
   appsLabel: "Three roles · two apps · one platform",
+  teacherDesc:
+    "My Classes → Assessments → score entry (manual/CSV) → Method Impact. Plus planner, chat, tallies, and Teacher KB.",
 } as const;
 
 export const LOGIN = {
@@ -33,21 +36,26 @@ export const LOGIN = {
 
 export const DASHBOARD = {
   title: "Teacher workspace",
-  subtitle: "Jump into analytics or the AI teaching assistant.",
-  app1Title: "Privacy Analytics",
+  subtitle: "Start with classes and assessments — then see teaching-method impact.",
+  app1Title: "Method Impact",
   app1Desc:
-    "CSV grades, weak-area flags, and trend views — student IDs only, no names.",
+    "Compare Quiz 1 vs Quiz 2 after a teaching method. Uses scores already entered under My Classes — no re-upload.",
+  classesTitle: "My Classes",
+  classesDesc:
+    "Select a class → Assessments / Quizzes → Enter Results (manual or CSV by student code).",
   app2Title: "AI Teaching Assistant",
-  app2Desc: "Bloom lesson planning, 3-layer KB chat, and pedagogy-aligned outputs.",
+  app2Desc:
+    "Bloom lesson planning, multilingual-ready KB, and structured slide content for PowerPoint export.",
   schoolTitle: "School admin workspace",
   schoolSubtitle:
     "School KB, branding, promotion policy, and roster key-share escrow.",
   platformTitle: "Platform admin workspace",
   platformSubtitle:
     "Platform KB ownership, school oversight, and cross-school promotion approvals.",
-  privacyTileDesc: "Student ID roster and where each data type lives.",
+  privacyTileDesc:
+    "Student codes only — no names. Scores and analytics use codes.",
   schoolAnalyticsDesc:
-    "See weak-area patterns and method tallies by student ID only.",
+    "Method impact tallies from class assessment results.",
 } as const;
 
 export const SCHOOL = {
@@ -82,6 +90,12 @@ export const PLANNER = {
   back: "Back",
   next: "Continue",
   scopeBadge: "Ask Knowledge Base",
+  exportPptTitle: "PowerPoint export",
+  exportPptHint:
+    "Claude generates structured slide JSON. This app converts it to a .pptx via a PPT library (not Claude binary output).",
+  exportPptPreview: "Preview Claude JSON",
+  exportPptDownload: "Convert JSON → Download .pptx (demo)",
+  exportPptDone: "Demo: slide JSON ready for PptxGenJS / python-pptx conversion.",
 } as const;
 
 export const CHAT = {
@@ -98,7 +112,8 @@ export const CHAT = {
 
 export const KB = {
   title: "Knowledge Base",
-  subtitle: "Content flows down, never up — unless you request promotion.",
+  subtitle:
+    "Content flows down, never up — unless you request promotion. Build 1 is English UI; storage is UTF-8 with language tags for Build 2.",
   layers: {
     platform: "Platform Knowledge Base",
     school: "School Knowledge Base",
@@ -110,11 +125,14 @@ export const KB = {
   promote: "Request promotion",
   promoteShort: "Promote",
   upload: "Upload Knowledge",
+  multilingualNote:
+    "Documents accept Unicode titles/content. Language metadata defaults to English; multilingual embeddings will power Build 2 retrieval.",
   docCols: {
     title: "Title",
     type: "Type",
     file: "File",
     status: "Status",
+    language: "Lang",
     uploadedAt: "Uploaded",
     actions: "Actions",
   },
@@ -129,6 +147,7 @@ export const KB = {
     type: "Type",
     file: "File",
     status: "Status",
+    language: "Language",
     uploaded: "Uploaded",
     tags: "Tags",
   },
@@ -137,6 +156,7 @@ export const KB = {
     contentType: "Content Type",
     pedagogy: "Pedagogy",
     title: "Title",
+    language: "Document language",
     subject: "Subject",
     gradeLevel: "Grade Level",
     tags: "Tags",
@@ -193,38 +213,69 @@ export const KB = {
 export const PRIVACY = {
   title: "Roster & Privacy",
   subtitle:
-    "Student IDs only — no names are stored. All analytics and tallies use IDs.",
+    "Student codes only — no names stored. Scores and analytics use codes.",
   warning:
-    "Clearing browser data removes the local student ID roster. Grades under IDs remain on the server.",
-  addStudent: "Add student",
-  rosterTitle: "Student ID roster (device-only)",
+    "This prototype never stores student names. Roster = student codes per class.",
+  addStudent: "Add student code",
+  rosterTitle: "Class roster (codes only)",
   storageTitle: "What is stored where",
-  studentId: "Student ID",
+  studentId: "Student code",
+  classLabel: "Class",
   actions: "Actions",
   remove: "Remove",
-  emptyRoster: "No student IDs yet.",
-  studentIdPlaceholder: "Student ID (or leave blank to auto-generate)",
-  autoCodeHint: "Leave blank to auto-generate a secure STU-#### ID.",
+  emptyRoster: "No student codes in this class yet.",
+  studentIdPlaceholder: "Student code (e.g. STU-001)",
+  autoCodeHint: "Leave blank to auto-generate STU-###.",
   backupTitle: "Roster backup (split-trust demo)",
   backupDesc:
-    "Prototype shows teacher password + school-admin share messaging. Password cannot be reset by the platform.",
+    "Encrypted backup of student codes only. Password cannot be reset by the platform.",
   setupBackup: "Set up backup",
   backupPassword: "Backup password (separate from login)",
   createBackup: "Create encrypted backup",
   backupSuccess:
-    "Last backup: just now · {count} student IDs · admin key share pending school escrow.",
+    "Last backup: just now · {count} student codes · admin key share pending school escrow.",
   restoreTitle: "Restore on new device",
   decryptLocally: "Decrypt locally",
   restoreHint:
-    "Grades stay under student IDs either way — restore only the ID roster on a new device.",
+    "Scores stay under student_id either way — restore only the code roster on a new device.",
 } as const;
 
 export const ANALYTICS = {
-  title: "Privacy Analytics",
-  subtitle: "Upload grade CSVs, spot weak areas, compare teaching methods.",
-  upload: "Map CSV columns",
+  title: "Teaching Method Impact",
+  subtitle:
+    "Link existing assessments (Quiz 1 → Quiz 2) to a teaching method. Scores are entered under My Classes — not here.",
+  workflowBanner:
+    "Score entry lives in the class workflow. This page only compares assessments you already scored.",
   weakAreas: "Weak area flags",
   methodTally: "Teaching method tally",
+  impactTitle: "Teaching Method Impact",
+  impactHint:
+    "Before vs after from linked assessments. Click a row to drill into student codes.",
+  drillTitle: "Improvement detail",
+  topicTitle: "Topic averages (selected class)",
+  classLabel: "Class",
+  linkExperiment: "Create method comparison",
+  linkExperimentHint:
+    "Example: Quiz 1 (before) + Cooperative Learning + Quiz 2 (after). System compares existing results automatically.",
+} as const;
+
+export const CLASSES = {
+  title: "My Classes",
+  subtitle:
+    "Class → Assessments / Quizzes → Enter Results. Then Method Impact reuses those scores.",
+  openClass: "Open class",
+  assessmentsTitle: "Assessments / Quizzes",
+  assessmentsHint:
+    "Create a quiz, then enter results by student code (manual or CSV).",
+  createAssessment: "New assessment",
+  enterResults: "Enter Results",
+  manualEntry: "Manual entry",
+  csvUpload: "CSV upload",
+  csvHint:
+    "Upload scores for this assessment only. Student codes — no names in the file.",
+  csvSample: "Example: StudentCode,Score,Date — STU-001,18,2026-09-16",
+  privacyCodesOnly:
+    "Privacy: results store and display student codes, not names.",
 } as const;
 
 export const BEHAVIOR = {
