@@ -113,7 +113,7 @@ export default function DashboardPage() {
         : TEACHER_TILES;
 
   return (
-    <div className="mx-auto max-w-5xl fade-in">
+    <div className="w-full fade-in">
       <header className="mb-8">
         <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
           {copy.title}

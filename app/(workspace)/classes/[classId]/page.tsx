@@ -54,7 +54,7 @@ export default function ClassDetailPage() {
 
   if (!classroom) {
     return (
-      <div className="mx-auto max-w-5xl py-12 text-sm text-[var(--ink-muted)]">
+      <div className="w-full py-12 text-sm text-[var(--ink-muted)]">
         Class not found.{" "}
         <Link href="/classes" className="text-[var(--brand)] underline">
           Back to My Classes
@@ -78,7 +78,7 @@ export default function ClassDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl fade-in">
+    <div className="w-full fade-in">
       <header className="mb-6">
         <p className="text-xs text-[var(--ink-faint)]">
           <Link href="/classes" className="hover:underline">

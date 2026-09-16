@@ -77,7 +77,7 @@ export default function AssistantPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col fade-in" style={{ minHeight: "70vh" }}>
+    <div className="flex w-full flex-col fade-in" style={{ minHeight: "70vh" }}>
       <header className="mb-5">
         <h1 className="font-display text-3xl font-semibold tracking-tight">
           AI Assistant

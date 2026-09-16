@@ -24,7 +24,7 @@ export default function SchoolSettingsPage() {
   if (!session || session.role !== "school") return null;
 
   return (
-    <div className="mx-auto max-w-4xl fade-in">
+    <div className="w-full fade-in">
       <header className="mb-6">
         <h1 className="font-display text-3xl font-semibold tracking-tight">
           {SCHOOL.settingsTitle}

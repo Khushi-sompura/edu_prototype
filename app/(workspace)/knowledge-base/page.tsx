@@ -1096,7 +1096,7 @@ export default function KnowledgeBasePage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl fade-in">
+    <div className="w-full fade-in">
       <header className="mb-6">
         <h1 className="font-display text-3xl font-semibold tracking-tight">
           {KB.title}
